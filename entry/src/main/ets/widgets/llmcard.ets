@@ -1,7 +1,7 @@
 import { TongyiDialog, TongyiDialogConfig } from "../dialog/started";
 import { delHistoriy, HistListData } from "../service/api";
 import { PublicUtils } from "../utils/pu";
-import { promptAction } from "@kit.ArkUI";
+import { promptAction, router } from "@kit.ArkUI";
 
 
 @Component
@@ -66,7 +66,15 @@ export struct LLMHistoryCard {
           .decoration({ type:this.orstatus===1?TextDecorationType.LineThrough:TextDecorationType.None
           ,color:Color.Black})
         Text("生成时间:"+this.history.createTime?.split("T")[0]).fontColor(this.orstatus==1?Color.Gray:Color.Black).fontSize(16).maxLines(1)
-      }.alignItems(HorizontalAlign.Start).width(this.left?'80%':'100%')
+      }.alignItems(HorizontalAlign.Start).width(this.left?'80%':'100%').onClick(e=>{
+        router.pushUrl({
+          url:"pages/LLMPage",
+          params:{
+            read:true,
+            cid:this.history.cid
+          }
+        })
+      })
       if (this.left){
         Row({space:10}){
           Button("删除").backgroundColor(

@@ -1,5 +1,5 @@
 import { promptAction, router } from '@kit.ArkUI';
-import { createLLM, FunctionDetailData, getFunctionsDetail, runLLM } from '../service/api';
+import { createLLM, FunctionDetailData, getFunctionsDetail, getHistoriy, runLLM } from '../service/api';
 import { getkeyStr } from '../service/kv';
 import { LMICallBack, lvMarkdownIn } from '@luvi/lv-markdown-in'
 
@@ -15,21 +15,40 @@ struct LLMPage {
   @State llm_loading : boolean = false
   @State userkey : string  = ""
   @State res : string  = ""
+  @State read : boolean = false
 
   async aboutToAppear(){
     if (router.getParams() !== undefined && router.getParams() !== null) {
-      let record = router.getParams() as Record<string, string|number | boolean>;
+      let record = router.getParams() as Record<string, string|number|boolean | boolean>;
       if (record !== undefined && record !== null) {
         let msg = record['id']
-        this.ids = msg as number
-        this.function = await getFunctionsDetail(this.ids)
-        this.userkey =await getkeyStr("userKey")
-        if (this.function){
-          this.function.fields.forEach((value : string,index:number)=>{
-            this.inputs.push("")
-          })
-          this.prompts = this.function.prompt
+        let read = record['read'] as  boolean
+        this.read = read
+        console.log(record["read"] as string)
+        if (read){
+          let cid = record['cid'] as string
+          const res2 = await getHistoriy(cid)
+          if (res2){
+            this.llm_ok=true
+            this.llm_loading=false
+            this.res=res2.context?.toString()
+            this.prompts=res2.prompts
+            this.userkey = ""
+          }
+        }else{
+          this.ids = msg as number
+          this.function = await getFunctionsDetail(this.ids)
+          this.userkey =await getkeyStr("userKey")
+          if (this.function){
+            this.function.fields.forEach((value : string,index:number)=>{
+              this.inputs.push("")
+            })
+            this.prompts = this.function.prompt
+          }
         }
+
+
+
       }
     }
   }
@@ -37,15 +56,26 @@ struct LLMPage {
     Scroll(){
     RelativeContainer() {
       Column(){
-        if (this.function){
-          Text("AI生成"+this.function.name)
-            .id('LLMPageHelloWorld')
-            .fontSize(30)
-            .fontWeight(FontWeight.Bold)
-            .alignRules({
-              center: { anchor: '__container__', align: VerticalAlign.Center },
-              middle: { anchor: '__container__', align: HorizontalAlign.Center }
-            })
+        if (this.function || this.read){
+          if (this.function){
+            Text("AI生成"+this.function.name)
+              .id('LLMPageHelloWorld')
+              .fontSize(30)
+              .fontWeight(FontWeight.Bold)
+              .alignRules({
+                center: { anchor: '__container__', align: VerticalAlign.Center },
+                middle: { anchor: '__container__', align: HorizontalAlign.Center }
+              })
+          }else{
+            Text("AI生成")
+              .id('LLMPageHelloWorld')
+              .fontSize(30)
+              .fontWeight(FontWeight.Bold)
+              .alignRules({
+                center: { anchor: '__container__', align: VerticalAlign.Center },
+                middle: { anchor: '__container__', align: HorizontalAlign.Center }
+              })
+          }
           Column(){
             Text("风险提示⚠️")
               .id('LLMPageHelloWorld')
@@ -99,7 +129,7 @@ struct LLMPage {
 
               }else{
                 lvMarkdownIn({
-                  text: this.res.toString(), // content为文本内容
+                  text: this.prompts.toString(), // content为文本内容
                   loadMode: "text", // 默认text可省略
                   loadCallBack: { // loadCallBack回调可省略
                     success(r: LMICallBack) {
@@ -109,11 +139,24 @@ struct LLMPage {
                       console.error("luvi-markdown-in > " + r.code, r.message)
                     }
                   }
-                })
+                }).width("90%")
+                lvMarkdownIn({
+                  text: this.res.toString(), // content为文本内容
+                  loadMode: "text", // 默认text可省略
+
+                  loadCallBack: { // loadCallBack回调可省略
+                    success(r: LMICallBack) {
+                      console.log("luvi-markdown-in > " + r.code, r.message)
+                    },
+                    fail(r: LMICallBack) {
+                      console.error("luvi-markdown-in > " + r.code, r.message)
+                    }
+                  }
+                }).width("90%")
 
               }
             }else{
-
+              if (this.function){
               ForEach(this.function.fields, (item: string,index:number) => {
                 Column() {
                   TextArea({ placeholder: '请输入'+this.function?.fieldsShow[index], text: this.inputs[index] })
@@ -180,6 +223,7 @@ struct LLMPage {
                   }
 
                 })
+              }
             }
           }
 

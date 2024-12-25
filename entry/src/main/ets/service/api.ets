@@ -28,8 +28,8 @@ export class ReqEntity {
 }
 export class HisDetailData {
   id?: number
-  prompts?: string
-  context?: string
+  prompts: string = ""
+  context: string = ""
   cid?: string
   status?: number
   createTime?: string
@@ -433,7 +433,7 @@ export class HistListData {
   prompts: string  = ""
   createTime: string = ""
   status: number = 0
-  cid: string = ""
+  cid: string =""
 }
 export async function getHistories(page:number) : Promise<HistListData[] | null> {
   let httpRequest = http.createHttp();
@@ -507,7 +507,6 @@ export async function getHistoriy(cir:string) : Promise<HisDetailData | null> {
       let result = JSON.parse(response.result.toString()) as ReqEntity
       if (result.code===200){
         return result.data as HisDetailData
-
       }else{
         return null
       }
