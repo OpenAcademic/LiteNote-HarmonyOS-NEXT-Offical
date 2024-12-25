@@ -64,7 +64,26 @@ export struct EditProductDialog {
       .alignItems(VerticalAlign.Center)
       .justifyContent(FlexAlign.SpaceBetween)
       .padding(20)
-
+      // 产品成本
+      Row() {
+        Text("价格").fontSize(20).fontWeight(FontWeight.Bold)
+        TextInput({
+          placeholder: "请输入产品价格",
+          text: this.price.toString()
+        })
+          .width('70%')
+          .padding(15)
+          .onChange((value: string) => {
+            try{
+              this.price = Number.parseFloat(value)
+            } catch (e) {
+            }
+          })
+      }
+      .width('100%')
+      .alignItems(VerticalAlign.Center)
+      .justifyContent(FlexAlign.SpaceBetween)
+      .padding(20)
       // 产品成本
       Row() {
         Text("成本").fontSize(20).fontWeight(FontWeight.Bold)

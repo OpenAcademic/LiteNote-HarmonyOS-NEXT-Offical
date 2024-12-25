@@ -83,6 +83,7 @@ export class Product {
         
         const valueBucket: relationalStore.ValuesBucket = {
           "name": product.name,
+          "price":product.price,
           "chengben": product.chengben,
           "purchaseTime": product.purchaseTime,
           "property": product.property
@@ -97,11 +98,31 @@ export class Product {
         return rows > 0
       } catch (error) {
         store.rollBack()
+
         console.error(`Update product failed, code is ${error.code}, message is ${error.message}`)
         return false
       }
     }
     return false
+  }
+  static delete_by_id(store:relationalStore.RdbStore,id:number) : boolean{
+    let predicates = new relationalStore.RdbPredicates("product");
+    predicates.equalTo("id", id);
+    console.info(`Delete rows: ${id}`);
+
+    if(store != undefined) {
+      try {
+        let rows: number = store.deleteSync(predicates)
+        console.info(`Delete rows: ${rows}`);
+        return rows != 0
+
+      } catch (err) {
+        console.error(`Delete failed, code is ${err.code},message is ${err.message}`);
+        return false
+      }
+    }
+    return false
+
   }
 
 } 

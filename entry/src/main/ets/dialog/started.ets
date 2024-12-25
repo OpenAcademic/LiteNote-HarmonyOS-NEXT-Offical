@@ -7,6 +7,7 @@ import { Express } from "../entity/express"
 import { Port } from "../entity/port"
 import { Code } from "../entity/code"
 import { List } from "@kit.ArkTS"
+import { init } from "@umeng/analytics"
 
 @Observed
 export class TongyiDialogConfig {
@@ -348,28 +349,50 @@ export struct TongyiDialog {
 @CustomDialog
 export struct PrivacyDialog {
   controller?: CustomDialogController
+  @State is_updated : boolean = false
   private webviewController: WebviewController = new webview.WebviewController()
 
   build() {
     Column() {
-      Text($r('app.string.privacy')).fontSize(30).margin(
-        {
-          top:30
-        }
-      ).fontWeight(FontWeight.Bolder)
+      if (!this.is_updated) {
+        Text($r('app.string.privacy')).fontSize(30).margin(
+          {
+            top:30
+          }
+        ).fontWeight(FontWeight.Bolder)
+        Text("我们最近更新了隐私协议").fontSize(15).margin(
+          {
+            top:10
+          }
+        ).fontWeight(FontWeight.Bolder)
+      }else{
+        Text($r('app.string.privacy')).fontSize(30).margin(
+          {
+            top:30
+          }
+        ).fontWeight(FontWeight.Bolder)
+      }
+
       Web({
         src: $rawfile('ysxy.html'),
         controller: this.webviewController,
         renderMode: RenderMode.ASYNC_RENDER // 设置渲染模式
-      }).width('90%').height('80%').backgroundColor(
+      }).width('90%').height(this.is_updated?'80%':'70%').backgroundColor(
         Color.Transparent
       )
       Row(){
         Button("拒绝").width('30%').onClick(e=>{
           if (dataPreferences !== undefined) {
             let mdataPreferences = dataPreferences as  preferences.Preferences
-            mdataPreferences.putSync("first_open",false)
-            console.log("my","first_open false")
+            if (!this.is_updated) {
+              mdataPreferences.putSync("is_skip_pa",true)
+              console.log("my","is_updated_pa false")
+
+            }else {
+              mdataPreferences.putSync("first_open",false)
+              console.log("my","first_open false")
+            }
+
             this.controller?.close()
             mdataPreferences.flush((err: BusinessError) => {
               if (err) {
@@ -385,11 +408,17 @@ export struct PrivacyDialog {
         Button("同意").width('30%').onClick(e=>{
           if (dataPreferences !== undefined) {
             let mdataPreferences = dataPreferences as  preferences.Preferences
-            mdataPreferences.putSync("first_open",false)
-            mdataPreferences.putSync("agree",true)
-            let p = mdataPreferences.getSync("first_open",true)
-            console.log("my","first_open false")
-            console.log("my","first_open read "+p)
+
+            if (!this.is_updated) {
+              mdataPreferences.putSync("is_updated_pa",true)
+              console.log("my","is_updated_pa false")
+              init()
+            }else {
+              mdataPreferences.putSync("first_open",false)
+              mdataPreferences.putSync("agree",true)
+              console.log("my","first_open false")
+            }
+
             mdataPreferences.flush((err: BusinessError) => {
               if (err) {
                 console.error(`Failed to flush. Code:${err.code}, message:${err.message}`);

@@ -12,6 +12,9 @@ import { Format } from '../entity/format';
 import { Product } from '../entity/product';
 import { Maintenance } from '../entity/maintenance';
 
+import AbilityStage from '@ohos.app.ability.AbilityStage';
+import { preInit, InternalPlugin, setLogEnabled, init, onEventObject } from '@umeng/analytics';
+
 
 export let store: relationalStore.RdbStore | undefined = undefined;
 export let dataPreferences: preferences.Preferences | null = null;
@@ -20,6 +23,10 @@ export let kvStore: distributedKVStore.SingleKVStore | null = null;
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void
   {
+    preInit({
+      context: this.context.getApplicationContext(),
+      plugins: [new InternalPlugin()]
+    });
     let context = this.context
     const kvManagerConfig: distributedKVStore.KVManagerConfig = {
       context: context,

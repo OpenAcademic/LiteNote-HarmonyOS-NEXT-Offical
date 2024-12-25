@@ -2,7 +2,11 @@
   "src": [
     "pages/Index",
     "pages/WebViewPage",
-    "pages/SettingsPage"
-
+    "pages/SettingsPage",
+    "pages/MoreActionsPage",
+    "pages/AppInfoPage",
+    "pages/LoginPage",
+    "pages/LLMPage",
+    "pages/HistoryPage"
   ]
 }

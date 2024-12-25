@@ -5,6 +5,8 @@ import { store } from "../entryability/EntryAbility"
 import { PublicUtils } from "../utils/pu"
 import { AddMaintenanceDialog } from "../dialog/AddMaintenanceDialog"
 import { EditProductDialog } from "../dialog/EditProductDialog"
+import { TongyiDialog, TongyiDialogConfig } from "../dialog/started"
+import { promptAction } from "@kit.ArkUI"
 
 @Component
 export struct ProductCard {
@@ -13,9 +15,13 @@ export struct ProductCard {
   onClickOK?: () => void;
 
   @State progress: number = 0
+  @State total: number = 0
+  @State yu: number = 0
+
   @State maintenances: Maintenance[] = []
   dialogController?: CustomDialogController | null = null
     editDialogController?: CustomDialogController | null = null
+  deleteDialogController?: CustomDialogController | null = null
 
   aboutToAppear() {
     this.dialogController =  new CustomDialogController({
@@ -44,9 +50,56 @@ export struct ProductCard {
         }
       })
     })
+    let tongyi = ()=>{
+      if (store){
+        let res = Product.delete_by_id(store,this.product.id)
+        if (res){
+          promptAction.showToast({
+            message: "删除成功",
+            duration: 1500
+          })
+        }else{
+          promptAction.showToast({
+            message: "删除失败",
+            duration: 1500
+          })
+        }
+        if (this.onClickOK){
+          this.onClickOK()
+
+        }
+      }
+
+    }
+    this.deleteDialogController = new CustomDialogController({
+      builder: TongyiDialog({
+        config: new TongyiDialogConfig(
+          "您是否同意删除该产品",
+          tongyi
+        )
+      }),
+      openAnimation: {
+        duration: 1200,
+        curve: Curve.LinearOutSlowIn,
+        delay: 500,
+        playMode: PlayMode.Alternate,
+        onFinish: () => {
+          console.info('play end')
+        }
+      },
+      autoCancel: true,
+      alignment: DialogAlignment.Bottom,
+      offset: { dx: 0, dy: -20 },
+      gridCount: 4,
+      backgroundBlurStyle:BlurStyle.Thick,
+      cornerRadius: 20,
+    })
+
     // 计算进度
     const totalDays = Math.floor(this.product.price / this.product.chengben)
     const usedDays = Math.floor((new Date().getTime() - this.product.purchaseTime) / (24 * 60 * 60 * 1000))
+    this.total = totalDays
+    this.yu = usedDays
     this.progress = Math.min(usedDays / totalDays * 100, 100)
     console.log("ProductCard this.product.price",this.product.price)
     console.log("ProductCard this.product.chengben",this.product.chengben)
@@ -83,13 +136,23 @@ export struct ProductCard {
         }.alignItems(HorizontalAlign.Start).justifyContent(FlexAlign.Center)
 
         Row(){
-          Progress({
-            value: this.progress,
-            total: 100,
-            type: ProgressType.Ring
-          })
-            .width(50)
-            .height(50)
+          Column(){
+            Text("总"+this.total.toFixed(0)+"天")
+            Stack(){
+              Progress({
+                value: this.progress,
+                total: 100,
+                type: ProgressType.Ring
+              }).width(60)
+                .height(60)
+              Text(this.progress.toFixed(2)).fontWeight(FontWeight.Bolder).fontSize(14).align(Alignment.Top)
+
+            }.width(60)
+            .height(60)
+
+            Text("余"+this.yu.toFixed(0)+"天")
+
+          }
 
           Image($r('sys.media.ohos_ic_public_arrow_down'))
             .width(24)
@@ -111,6 +174,15 @@ export struct ProductCard {
               .fontSize(16)
               .fontWeight(FontWeight.Bold)
             Row(){
+              Image($r('sys.media.ohos_ic_public_remove'))
+                .width(24)
+                .height(24)
+                .rotate({ z: 1, angle: this.isExpanded ? 180 : 0 })
+                .onClick(() => {
+                  if (this.deleteDialogController) {
+                    this.deleteDialogController.open()
+                  }
+                }).margin(5)
               Image($r('sys.media.ohos_ic_public_edit'))
                 .width(24)
                 .height(24)

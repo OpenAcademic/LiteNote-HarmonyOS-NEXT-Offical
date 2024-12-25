@@ -1,9 +1,87 @@
 import { relationalStore } from '@kit.ArkData'
+import { it } from '@ohos/hypium'
 import { AddProductDialog } from '../dialog/AddProductDialog'
 import { Product } from '../entity/product'
-import { store } from '../entryability/EntryAbility'
+import { dataPreferences, store } from '../entryability/EntryAbility'
 import { ProductCard } from '../widgets/ProductCard'
+import { router } from '@kit.ArkUI'
 
+class ActionItem{
+  name:string
+  value:number
+
+  constructor(name:string,value:number) {
+    this.name = name
+    this.value = value
+  }
+}
+
+@Component
+export struct MoreSubActionsPage{
+  @State model_select : number = 0
+  @State actions: string[] = [
+    "取件码",
+    "产品管理"
+  ]
+
+  aboutToDisappear() {
+    if (dataPreferences) {
+      this.model_select = dataPreferences.getSync('mode_select', 0 as number) as number
+    }
+    this.actions = [
+      "取件码",
+      "产品管理"
+    ]
+
+  }
+
+  build() {
+    Stack() {
+      Column() {
+        Text("更多功能")
+          .fontSize(28)
+          .fontWeight(FontWeight.Bold)
+          .width('100%')
+          .textAlign(TextAlign.Center)
+          .margin({ top: 20, bottom: 10 })
+
+        List({
+          space:20
+        }) {
+          ForEach(this.actions, (item: string,index:number) => {
+            ListItem() {
+              Row() {
+                Text(item)
+                  .fontSize(20)
+                  .fontWeight(FontWeight.Bold)
+              }
+              .width('100%').backgroundColor(
+                $r('sys.color.ohos_id_color_toolbar_sub_bg')
+              ).borderRadius('2%')
+              .justifyContent(FlexAlign.Center)
+              .alignItems(VerticalAlign.Center).onClick(e=>{
+                router.pushUrl({
+                  url:"pages/MoreActionsPage",
+                  params:{
+                    id:index
+                  }
+                })
+              })
+              .padding(20)
+            }
+          },(item:string)=>item.toString())
+        }
+        .width('100%')
+        .margin(20)
+        .padding(20)
+      }
+      .width('100%')
+      .height('100%')
+    }
+    .width('100%')
+    .height('100%')
+  }
+}
 @Component
 export struct ProductListPage {
   @State products: Product[] = []

@@ -78,7 +78,15 @@
     },
     {
       "name": "LiteNote_display_name",
-      "value": "轻笔记（取件码）"
+      "value": "红宝书"
+    },
+    {
+      "name": "servicewidget_desc",
+      "value": "This is a Desktop PickupCode widget."
+    },
+    {
+      "name": "servicewidget_display_name",
+      "value": "Desktop PickupCode"
     }
   ]
 }

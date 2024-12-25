@@ -22,12 +22,37 @@ export struct SelectDateDialog {
       .onDateChange((value: Date) => {
         this.selectedDate = value
         console.info('select current date is: ' + value.toString())
-        if (this.selected){
-          this.selected(value)
-        }
-        this.controller?.close()
+
         })
         .width('100%')
+      Row() {
+        Button("取消")
+          .width('30%')
+          .onClick(() => {
+            this.controller?.close()
+          })
+          .backgroundColor(Color.Red)
+
+        Button("添加")
+          .width('30%')
+          .onClick(() => {
+            if (!this.selectedDate){
+              promptAction.showToast({
+                message:"你还没有选择噢",
+                duration:1500
+              })
+              return
+            }
+            if (this.selected){
+              this.selected(this.selectedDate)
+            }
+            this.controller?.close()
+          })
+          .backgroundColor(Color.Green)
+      }
+      .width('100%')
+      .justifyContent(FlexAlign.SpaceBetween)
+      .padding(20)
         
     }
     .padding(20)

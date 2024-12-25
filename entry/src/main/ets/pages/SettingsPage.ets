@@ -4,12 +4,24 @@ import { promptAction } from '@kit.ArkUI'
 @Entry
 export struct SettingsPage {
   @State isAIEnabled: boolean = false
+  @State models_regs : string[] = []
+  @State modes : SelectOption[] = []
+  @State model_select : number = 0
 
   aboutToAppear() {
     // 读取设置
     if (dataPreferences) {
       this.isAIEnabled = dataPreferences.getSync('ai_enabled', false as boolean) as boolean
+      this.model_select = dataPreferences.getSync('mode_select', 0 as number) as number
     }
+    let dreg = [
+      "取件码",
+      "产品管理",
+      // "车票收藏",
+    ]
+    dreg.forEach((value,index)=>{
+      this.modes.push({value:value})
+    })
   }
 
   build() {
@@ -53,6 +65,9 @@ export struct SettingsPage {
       .justifyContent(FlexAlign.SpaceBetween)
       .padding(20)
       .margin({ top: 20 })
+
+
+
     }
     .width('100%')
     .height('100%')
